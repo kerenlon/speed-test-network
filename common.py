@@ -1,21 +1,15 @@
-from enum import Enum
-
-# Network constants
+# Constants for UDP
 BROADCAST_PORT = 13117  # Used by both server to broadcast and client to listen
 MAGIC_COOKIE = 0xabcddcba  # Used in packet validation
 BUFFER_SIZE = 1024  # Shared buffer size for network operations
+UDP_TIMEOUT = 2  # Timeout for UDP packets in seconds
+BROADCAST_INTERVAL = 1  # Interval between broadcast offers
+MAX_CONNECTIONS = 5  # Max TCP connections
 
 # Message type constants
 MSG_TYPE_OFFER = 0x2  # Server -> Client offer message
 MSG_TYPE_REQUEST = 0x3  # Client -> Server request message
 MSG_TYPE_PAYLOAD = 0x4  # Server -> Client payload message
-
-
-class ClientState(Enum):
-    """Represents the possible states of the client application."""
-    STARTUP = 1  # Initial state when client starts
-    LOOKING_FOR_SERVER = 2  # Actively listening for server offers
-    SPEED_TEST = 3  # Conducting speed test with server
 
 
 class Colors:

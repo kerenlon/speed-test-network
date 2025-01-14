@@ -1,55 +1,35 @@
-import argparse
-from time import sleep
-from common import *
+import threading
+from client import SpeedTestClient
+from server import SpeedTestServer
 
 
-class SpeedTest:
-    """Main class to handle both client and server functionality"""
+def run_server(host, port):
+    server = SpeedTestServer(host, port)
+    server.start()
 
-    def __init__(self):
-        self.client = None
-        self.server = None
 
-    def start_client(self):
-        """Initialize and start client"""
-        try:
-            from client import SpeedTestClient
-            self.client = SpeedTestClient()
-            print(f"{Colors.BLUE}Starting client mode...{Colors.RESET}")
-            self.client.start()
-        except Exception as e:
-            print(f"{Colors.RED}Failed to start client: {str(e)}{Colors.RESET}")
-
-    def start_server(self):
-        """Initialize and start server"""
-        try:
-            from server import SpeedTestServer
-            self.server = SpeedTestServer()
-            print(f"{Colors.BLUE}Starting server mode...{Colors.RESET}")
-            self.server.start()
-        except Exception as e:
-            print(f"{Colors.RED}Failed to start server: {str(e)}{Colors.RESET}")
-
-    @staticmethod
-    def main():
-        """Main entry point with argument parsing"""
-        parser = argparse.ArgumentParser(description='Speed Test Application')
-        parser.add_argument('mode', choices=['client', 'server'],
-                            help='Run as client or server')
-
-        args = parser.parse_args()
-        speed_test = SpeedTest()
-
-        try:
-            if args.mode == 'client':
-                speed_test.start_client()
-            else:
-                speed_test.start_server()
-        except KeyboardInterrupt:
-            print(f"\n{Colors.YELLOW}Shutting down...{Colors.RESET}")
-        except Exception as e:
-            print(f"{Colors.RED}Error: {str(e)}{Colors.RESET}")
+def run_client(listen_port):
+    client = SpeedTestClient(listen_port)
+    client.start()
 
 
 if __name__ == "__main__":
-    SpeedTest.main()
+    role = input("Enter role (client or server): ").lower()
+
+    if role == 'server':
+        host = input("Enter server IP address (default: localhost): ") or "localhost"
+        port = int(input(f"Enter server port (default: 5001): ") or 5001)
+        print(f"Starting server on {host}:{port}")
+
+        # Start the server in a separate thread
+        server_thread = threading.Thread(target=run_server, args=(host, port))
+        server_thread.start()
+        server_thread.join()  # Wait for the server to finish
+    elif role == 'client':
+        listen_port = int(input(f"Enter client listen port (default: 5003): ") or 5003)
+        print(f"Starting client with listen port: {listen_port}")
+
+        # Start the client
+        run_client(listen_port)
+    else:
+        print("Invalid role. Please enter 'client' or 'server'.")

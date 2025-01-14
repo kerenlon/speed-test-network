@@ -1,10 +1,17 @@
-import subprocess
 import socket
-import struct
 import threading
 import time
-from typing import Tuple, Optional
+from enum import Enum
 from common import *
+import struct
+from typing import Optional, Tuple
+
+
+class ClientState(Enum):
+    """Enum to represent client states"""
+    STARTUP = 1
+    LOOKING_FOR_SERVER = 2
+    SPEED_TEST = 3
 
 
 class SpeedTestStatistics:
@@ -28,32 +35,23 @@ class SpeedTestStatistics:
 
 
 class SpeedTestClient:
-    def __init__(self):
-        self.state = ClientState.STARTUP
-        self.udp_socket = None
+    def __init__(self, listen_port=5003):
+        self.listen_port = listen_port
         self.running = False
-        self.current_server: Optional[Tuple[str, Tuple[int, int]]] = None
-        self.transfer_threads = []
-        self.stop_event = threading.Event()
+        self.udp_socket = None
 
     def start(self):
-        """Start the client state machine."""
+        """Start the client to send/receive data."""
         try:
-            self.state = ClientState.LOOKING_FOR_SERVER
-            self.running = True
             self._setup_udp_socket()
+            print(f"Client started, listening on port {self.listen_port}...")
 
-            print(f"{Colors.BLUE}Client started, listening for offer requests...{Colors.RESET}")
-
-            while self.running and not self.stop_event.is_set():
-                try:
-                    self._run_state_machine()
-                except Exception as e:
-                    print(f"{Colors.RED}Error in client state machine: {str(e)}{Colors.RESET}")
-                    self.state = ClientState.LOOKING_FOR_SERVER
-                    time.sleep(1)
+            self.running = True
+            while self.running:
+                # Perform tasks like searching for a server, etc.
+                pass
         except KeyboardInterrupt:
-            print(f"\n{Colors.YELLOW}Shutting down client...{Colors.RESET}")
+            print("Shutting down client...")
         finally:
             self._cleanup()
 
@@ -74,17 +72,6 @@ class SpeedTestClient:
             self._handle_speed_test()
             self.state = ClientState.LOOKING_FOR_SERVER
             print(f"{Colors.BLUE}All transfers complete, listening to offer requests{Colors.RESET}")
-
-    def _get_validated_input(self, prompt: str, min_val: int, max_val: int) -> int:
-        """Get and validate user input within specified range."""
-        while True:
-            try:
-                value = int(input(prompt))
-                if min_val <= value <= max_val:
-                    return value
-                print(f"{Colors.YELLOW}Please enter a value between {min_val} and {max_val}{Colors.RESET}")
-            except ValueError:
-                print(f"{Colors.RED}Please enter a valid number{Colors.RESET}")
 
     def _handle_server_discovery(self):
         """Handle the LOOKING_FOR_SERVER state."""
@@ -212,21 +199,7 @@ class SpeedTestClient:
             sock.close()
 
     def _cleanup(self):
-        """Clean up resources when shutting down."""
-        self.running = False
-        self.stop_event.set()
-
+        """Cleanup resources (close the socket)."""
         if self.udp_socket:
-            try:
-                self.udp_socket.close()
-            except:
-                pass
-
-        for thread in self.transfer_threads:
-            if thread.is_alive():
-                thread.join(timeout=1.0)
-
-
-if __name__ == "__main__":
-    client = SpeedTestClient()
-    client.start()
+            self.udp_socket.close()
+            print("Client socket closed.")

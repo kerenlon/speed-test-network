@@ -3,7 +3,7 @@ import socket
 import threading
 from time import sleep
 from Exceptions import ServerBroadcastException
-from Globals import SERVER_ADDRESS, UDP_MAGIC_COOKIE, UDP_MSG_TYPE_OFFER, SERVER_UDP_PORT, SERVER_TCP_PORT
+from common import SERVER_ADDRESS, UDP_MAGIC_COOKIE, UDP_MSG_TYPE_OFFER, SERVER_UDP_PORT, SERVER_TCP_PORT
 
 
 class Server:

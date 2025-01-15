@@ -1,6 +1,6 @@
 import socket
 import struct
-from Globals import SERVER_ADDRESS, SERVER_UDP_PORT
+from common import SERVER_ADDRESS, SERVER_UDP_PORT
 
 
 class Client:
